@@ -8,7 +8,7 @@
 
 
 typedef struct{
-	char rank[6];
+	char rank[2];
 	char suit[2];
 	int hidden;
 } Card;
@@ -22,6 +22,8 @@ typedef struct{
 	char name[20];
 	Card hand[10];
 	int handSize;
+	int eval[2];
+	int money;
 } Player;
 
 typedef struct{
@@ -32,6 +34,17 @@ typedef struct{
 } Table;
 
 
+
+
+void evalP(Player *player){
+	int sum = 0;
+	for (int i = 0; i < player->handSize; i++){
+
+	}
+	// add up values, if hand contains ACE, add another value which is +10, then once done, evaluate values, remove
+	//any that are greater than 21, and set player->eval to either {#, #}, {bust,} or {#, bust}? thin
+	// of some way to easily interpret that, and where it should be done
+}
 
 void showCard(Card *card){
 	if (!card->hidden){
@@ -141,8 +154,6 @@ void makeTable(){
 
     dealFirst(&table);
     showTable(&table);
-    printf("%d", table.players[0].hand[0].hidden);
-
 
 }
 

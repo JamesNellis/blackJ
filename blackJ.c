@@ -19,7 +19,7 @@ typedef struct{
 } Deck;
 
 typedef struct{
-	char name[10];
+	char name[20];
 	Card hand[10];
 	int handSize;
 } Player;
@@ -28,9 +28,45 @@ typedef struct{
 	Player players[5];
 	int togo;
 	int playercount;
+	Deck deck;
+} Table;
+
+
+
+void showCard(Card *card){
+	if (!card->hidden){
+		printf("%s%s ", card->rank, card->suit);
+	}
+	else{
+		printf("XX ");
+	}
 }
 
+void showHand(Player *player){
+	printf("%s's Hand: \n", player->name);
+	for (int n = 0; n < player->handSize; n++){
+		showCard(&(player->hand[n]));
+	}
+	printf("\n");
+}
 
+void showDeck(Deck *deck){
+	for (int i = 0; i < deck->size; i++){
+		showCard(&(deck->cards[i]));
+	}
+	printf("\n");
+}
+
+void showTable(Table *table){
+	printf("------\n");
+	printf("Table's Hands:\n");
+	printf("------\n");
+	for (int i = 0; i < table->playercount; i++){
+
+		showHand(&(table->players[i]));
+	}
+	printf("------\n");
+}
 
 
 void shuffleDeck(Deck *deck){
@@ -43,71 +79,75 @@ void shuffleDeck(Deck *deck){
 	}
 }
 
-
-void showCard(Card *card){
-	if (!card->hidden){
-		printf("%s%s ", card->rank, card->suit);
-	}
-	else{
-		printf("XX ");
-	}
-}
-
-void assignCard(Deck *deck, char crank[], char csuit[]){
-	//deck counter only goes up, cannot cope with anything more than making a deck
-	strcpy(deck->cards[deck->size].rank, crank);
-	strcpy(deck->cards[deck->size].suit, csuit);
-	deck->cards[deck->size].hidden = FALSE;
-	deck->size++;
-}
-
-void showDeck(Deck *deck){
-	for (int i = 0; i < deck->size; i++){
-		showCard(&(deck->cards[i]));
-	}
-	printf("\n");
-}
-
 void makeDeck(Deck *deck){
 	deck->size = 0;
 	char suits[4][2] = {"S", "C", "D", "H"};
 	char ranks[13][6] = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
 	for (int i = 0; i < 4; i++){
 		for (int j = 0; j < 13; j++) {
-			assignCard(deck, ranks[j], suits[i]);
+			strcpy(deck->cards[deck->size].rank, ranks[j]);
+			strcpy(deck->cards[deck->size].suit, suits[i]);
+			deck->cards[deck->size].hidden = FALSE;
+			deck->size++;
 		}
 	}
 	shuffleDeck(deck);	
 }
 
-void showHand(Player *player){
-	printf("%s's Hand: \n", player->name);
-	for (int n = 0; n < player->handSize; n++){
-		showCard(&(player->hand[n]));
-	}
-	printf("\n");
-}
 
 void drawCard(Player *player, Deck *deck, int cards, int hidden){
 	for (int n = 0; n < cards; n++){
 		player->hand[player->handSize] = deck->cards[(deck->size) - 1];
+		player->hand[player->handSize].hidden = hidden;
 		player->handSize++;
 		deck->size--;
 	}
 }
 
+void dealFirst(Table *table){
+	drawCard(&(table->players[0]), &(table->deck), 1, TRUE);
+	drawCard(&(table->players[0]), &(table->deck), 1, FALSE);
+	for (int i = 1; i < table->playercount; i++){
+		drawCard(&(table->players[i]), &(table->deck), 2, FALSE);
+	}
+}
 
-//void makePlayer(
+void makeTable(){
+	//int players;
+    // printf("How many players?: ");
+    // scanf("%d", &players);
+    // printf("Continuing with: %d player(s)...\n", players);
+    // char names[players + 1][20];
+    // strcpy(names[0], "Dealer");
+    // while(!getchar());
+    // for (int i = 0; i < players; i ++){
+    // 	printf("Enter Player %d Name: ", i+1);
+    // 	fgets(names[i+1], sizeof(names[i+1]), stdin);
+    // 	names[i+1][strcspn(names[i + 1], "\n")] = 0;
+    // }
+    // printf("\n");
+
+    int players = 3;
+	char names[4][20] = {"Dealer", "James", "Andrew", "Catherine"};
+    Table table;
+    makeDeck(&table.deck);
+    table.playercount = players + 1;
+    table.togo = 0;
+
+    for (int i = 0; i< players + 1; i++){
+    	strcpy(table.players[i].name, names[i]);
+    	table.players[i].handSize = 0;
+    }
+
+    dealFirst(&table);
+    showTable(&table);
+    printf("%d", table.players[0].hand[0].hidden);
+
+
+}
 
 int main(){
 	srand(time(NULL));
-	Deck deck;
-	makeDeck(&deck);
-	Player dealer;
-	strcpy(dealer.name, "Dealer");
-	dealer.handSize = 0;
-	drawCard(&dealer, &deck, 2, 0);
-	showHand(&dealer);
-	printf("%d", deck.size);
+	makeTable();
 	return 0;
 }

@@ -43,7 +43,7 @@ void shuffleDeck(Table *table);
 
 void evalHand(Table *table, Hand *hand, int print);
 
-void promptChoice(Table *table);
+void promptChoice(Table *table, int i);
 
 //temp:
 
@@ -62,11 +62,17 @@ int main(){
 			drawCard(&table, i);
 		}
 	}
+
+	// updatePublicHands(table);
+	// evalHand(table, &table->publicHands[i], 1);
+	showTable(&table);
+	table.hands[0].hidden = FALSE;
 	showTable(&table);
 
-	promptChoice(&table);
-
-
+	while (table.publicHands[0].eval[0] < 17){
+		drawCard(&table, 0);
+		showTable(&table);
+	}
 
 
 
@@ -102,6 +108,11 @@ void initTable(Table *table){
 	table->hands[1].hidden = FALSE;
 	initHandNegTwo(table->hands[1].hand, 10);
 	table->hands[1].size = 0;
+
+	table->hands[2].hidden = FALSE;
+	initHandNegTwo(table->hands[2].hand, 10);
+	table->hands[2].size = 0;
+
 	table->userHands = 1;
 
 	for (int j = 0; j < 2; j++){
@@ -136,7 +147,7 @@ void drawCard(Table *table, int i){
 	evalHand(table, &table->publicHands[i], 0);
 }
 
-void evalHand(Table *table, Hand *hand, int print){
+void evalHand(Table *table, Hand *hand, int print) {
 
 	// no ace, no bust, no bj: n, -1
 	// ace: n, n+10
@@ -156,30 +167,32 @@ void evalHand(Table *table, Hand *hand, int print){
 				// if ace not in hand, check if it should be
 				if (!ace){
 					ace = (hand->hand[i] == 1? TRUE : FALSE);
-				}	}
-	}
-	hand->eval[0] = sum;
-	if (ace){
-		hand->eval[1] = hand->eval[0] + 10;
+				}	
+			}
 	}
 
-	if (hand->eval[0] == 21 || hand->eval[1] == 21){
-		hand->eval[0] = 21;
-		hand->eval[1] = -1;
-	}
-	else if (hand->eval[0] > 21 && (hand->eval[1] > 21 || hand->eval[1] == -1)) {
-		hand->eval[1] = MAX(hand->eval[0], hand->eval[1]);
-		hand->eval[0] = -2;
-	}
+	hand->eval[0] = MAX(MIN(sum, 21), MIN(sum + (ace ? 10 : 0), 21));
+
 	if (print){
-		if (hand->eval[1] == -1){
-			printf("EVAL: %d\n", hand->eval[0]);
-		}
-		else {
-			printf("EVAL: %d OR %d\n", hand->eval[0], hand->eval[1]);
-		}
+		printf("EVAL: %d\n", MAX(MIN(sum, 21), MIN(sum + (ace ? 10 : 0), 21)));
+
 	}
+
 }
+
+
+void promptChoice(Table *table, int i){
+	char choice[1];
+	int doublable = table->hands[i].size == 2;
+	int splitable = doublable && (table->hands[i].hand[0] == table->hands[i].hand[1]);
+	printf("(H)it, (S)tand%s%s?: ", ((doublable) ? ", Double" : ""), (splitable) ? ", Split (2)" : "");
+    scanf("%c", choice);
+
+}
+
+
+
+
 
 //temp for tetsing:
 
@@ -191,6 +204,7 @@ void showHand(Hand *hand){
 }
 
 void showTable(Table *table){
+	updatePublicHands(table);
 	printf("Table's Hands: \n");
 	for (int i = 0; i < (table->userHands + 1); i++){
 		printf("Hand %d: \n", i);
@@ -199,6 +213,3 @@ void showTable(Table *table){
 	}
 	printf("\n");
 }
-
-
-

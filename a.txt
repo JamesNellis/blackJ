@@ -1,0 +1,7 @@
+finish game version
+
+make 1 on 1, dealer player, sim as efficient as possible, + easy to plug in to
+
+make models of play, compare results
+
+set inputs, set outputs, try implimenting a transformer, compare to other models
